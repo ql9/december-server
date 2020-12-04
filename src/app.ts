@@ -30,6 +30,7 @@ app.get('/users/:userId', userController.readUser);
 app.put('/users/:userId', userController.updateUser);
 app.delete('/users/:userId', userController.deleteUser);
 
+//Login
 app.post('/users/login', userController.login);
 
 export default app;
