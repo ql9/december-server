@@ -9,16 +9,25 @@ export const superSecret =
 export const readUser = async (req: Request, res: Response) => {
     await User.findById(req.params.userId)
         .then(user => {
-            res.status(200).send(user);
+            res.status(200).json({
+                success: true,
+                data: user,
+            });
         })
         .then(err => {
-            res.status(500).send(err);
+            res.status(500).json({
+                success: false,
+                message: err,
+            });
         });
 };
 
 export const createUser = async (req: Request, res: Response) => {
     if (!req.body.username || !req.body.password || !req.body.name) {
-        res.status(400).send('Invalid input data');
+        res.status(400).json({
+            success: false,
+            message: 'Invalid input data',
+        });
     }
 
     const user = new User({
@@ -30,10 +39,31 @@ export const createUser = async (req: Request, res: Response) => {
     await user
         .save()
         .then(data => {
-            res.status(200).send(data);
+            const token = jwt.sign(
+                {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore: Object is possibly 'null'
+                    name: user.name,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore: Object is possibly 'null'
+                    username: user.username,
+                },
+                superSecret,
+                {
+                    expiresIn: '24h',
+                },
+            );
+            res.status(200).json({
+                success: true,
+                data: data,
+                token: token,
+            });
         })
         .catch(err => {
-            res.status(500).send(err);
+            res.status(500).json({
+                success: false,
+                message: err,
+            });
         });
 };
 
@@ -58,11 +88,17 @@ export const updateUser = async (req: Request, res: Response) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore: Object is possibly 'null'
             await user.save().then(() => {
-                res.status(200).send('User update successful');
+                res.status(200).json({
+                    success: true,
+                    message: 'Updated',
+                });
             });
         })
         .catch(err => {
-            res.status(500).send(err.message);
+            res.status(500).json({
+                success: false,
+                message: err,
+            });
         });
 };
 
@@ -70,10 +106,16 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
     await User.deleteOne({ _id: req.params.userId })
         .then(() => {
-            res.status(204).send('Deleted user');
+            res.status(204).json({
+                success: true,
+                message: 'Deleted',
+            });
         })
         .catch((err: any) => {
-            res.status(500).send(err);
+            res.status(500).json({
+                success: false,
+                message: err,
+            });
         });
 };
 
