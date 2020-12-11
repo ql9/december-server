@@ -12,6 +12,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//add
+
 mongoose.Promise = global.Promise;
 mongoose
     .connect(config.uri, {
