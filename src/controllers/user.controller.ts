@@ -1,6 +1,10 @@
 import { User } from '../models/user.model';
 import { Request, Response } from 'express';
 import { hash, generateSalt, compare } from '../hash';
+import jwt from 'jsonwebtoken';
+
+export const superSecret =
+    '20073e0938c0b6791114ba21deecec5eee4dfdce7482653e134f1a6a2f307a7cf05986013a46689eed83072370d4f2dac7b634db8ba77b55437ac200a0a23ff5';
 
 export const readUser = async (req: Request, res: Response) => {
     await User.findById(req.params.userId)
@@ -62,6 +66,7 @@ export const updateUser = async (req: Request, res: Response) => {
         });
 };
 
+//#region delete user
 export const deleteUser = async (req: Request, res: Response) => {
     await User.deleteOne({ _id: req.params.userId })
         .then(() => {
@@ -72,6 +77,8 @@ export const deleteUser = async (req: Request, res: Response) => {
         });
 };
 
+//#endregion
+
 export const login = async (req: Request, res: Response) => {
     await User.findOne({ username: req.body.username })
         .select('+password')
@@ -80,15 +87,37 @@ export const login = async (req: Request, res: Response) => {
             // @ts-ignore: Object is possibly 'null'
             await compare(req.body.password, user.password).then(result => {
                 if (result) {
+                    const token = jwt.sign(
+                        {
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore: Object is possibly 'null'
+                            name: user.name,
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore: Object is possibly 'null'
+                            username: user.username,
+                        },
+                        superSecret,
+                        {
+                            expiresIn: '24h',
+                        },
+                    );
                     res.status(200).json({
-                        status: 'Success',
+                        success: true,
                         message: 'Correct Details',
-                        data: user,
+                        token: token,
                     });
                 } else {
-                    res.status(400).send('Invalid Username or Password');
+                    res.status(400).json({
+                        success: false,
+                        message: 'Invalid Username or Password',
+                    });
                 }
             });
         })
-        .catch(() => res.status(404).send('User not found'));
+        .catch(() =>
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            }),
+        );
 };
