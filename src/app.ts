@@ -1,22 +1,26 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-
 import * as bodyParser from 'body-parser';
-import * as config from './config/mongodb';
-import * as userController from './controllers/user.controller';
 const cors = require('cors');
+import dotenv from 'dotenv';
+
+import * as userController from './controllers/user.controller';
+import * as authController from './controllers/auth.controller';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//add
-
 mongoose.Promise = global.Promise;
+
 mongoose
-    .connect(config.uri, {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    .connect(process.env.MONGO_DB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true,
@@ -29,11 +33,9 @@ mongoose
         process.exit();
     });
 
-// Create account
-app.post('/users/', userController.createUser);
-
-// Login
-app.post('/users/login', userController.login);
+app.post('/register', authController.register);
+app.post('/activation', authController.activate);
+app.post('/login', authController.login);
 
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {

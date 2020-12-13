@@ -9,9 +9,10 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "noImplicitReturns": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true,
   },
-  "compileOnSave": false,
+  "compileOnSave": true,
   "include": [
     "src"
   ]

@@ -42,10 +42,10 @@ export const createUser = async (req: Request, res: Response) => {
             const token = jwt.sign(
                 {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore: Object is possibly 'null'
+                    // @ts-ignore
                     name: user.name,
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore: Object is possibly 'null'
+                    // @ts-ignore
                     username: user.username,
                 },
                 superSecret,
@@ -72,21 +72,21 @@ export const updateUser = async (req: Request, res: Response) => {
         .then(async user => {
             if (req.body.username) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore: Object is possibly 'null'
+                // @ts-ignore
                 user.username = req.body.username;
             }
             if (req.body.password) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore: Object is possibly 'null'
+                // @ts-ignore
                 user.password = await hash(req.body.password, generateSalt(10));
             }
             if (req.body.name) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore: Object is possibly 'null'
+                // @ts-ignore
                 user.name = req.body.name;
             }
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore: Object is possibly 'null'
+            // @ts-ignore
             await user.save().then(() => {
                 res.status(200).json({
                     success: true,
@@ -126,16 +126,16 @@ export const login = async (req: Request, res: Response) => {
         .select('+password')
         .then(async user => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore: Object is possibly 'null'
+            // @ts-ignore
             await compare(req.body.password, user.password).then(result => {
                 if (result) {
                     const token = jwt.sign(
                         {
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore: Object is possibly 'null'
+                            // @ts-ignore
                             name: user.name,
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore: Object is possibly 'null'
+                            // @ts-ignore
                             username: user.username,
                         },
                         superSecret,
