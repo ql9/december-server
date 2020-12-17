@@ -11,7 +11,20 @@ import * as authController from './controllers/auth.controller';
 dotenv.config();
 
 const app = express();
+
+//use cors middleware
+// app.use(
+//     cors({
+//         allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token'],
+//         credentials: true,
+//         methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+//         origin: process.env.APP_URL,
+//         preflightContinue: false,
+//     }),
+// );
+
 app.use(cors());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -36,12 +49,16 @@ mongoose
 app.post('/register', authController.register);
 app.post('/activation', authController.activate);
 app.post('/login', authController.login);
+app.post('/auth/google', authController.google);
+app.post('/auth/facebook', authController.facebook);
 
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {
-    const token = req.body.token || req.query.token || req.headers['x-access-token'];
+    const token = req.headers.authorization;
     if (token) {
-        jwt.verify(token, userController.superSecret, function (err: any, decoded: any) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        jwt.verify(token, process.env.JWT_SECRET_KEY, function (err: any, decoded: any) {
             if (err) {
                 return res.status(403).json({
                     success: false,
