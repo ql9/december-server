@@ -336,7 +336,7 @@ export const facebook = async (req: Request, res: Response) => {
     });
     const { id, email, name } = data; // { id, email, first_name, last_name }
 
-    User.findOne({ facbook_id: id }).then(user => {
+    User.findOne({ facbook_id: id }).then(async user => {
         if (user) {
             console.log('alo');
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -346,14 +346,13 @@ export const facebook = async (req: Request, res: Response) => {
             });
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const { _id, email, name, role } = user;
+            const { _id, name, role } = user;
             return res.json({
                 token,
-                user: { _id, email, name, role },
+                user: { _id, name, role },
             });
         } else {
-            const password = email + process.env.JWT_SECRET;
-            user = new User({ name, email, password, facebook_id: id });
+            user = new User({ name, email, password: await hash('password', generateSalt(11)), facebook_id: id });
             user.save((err, data) => {
                 if (err) {
                     console.log('ERROR FACEBOOK LOGIN ON USER SAVE', err);
@@ -366,10 +365,10 @@ export const facebook = async (req: Request, res: Response) => {
                 const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                const { _id, email, name, role } = data;
+                const { _id, name, role } = data;
                 return res.json({
                     token,
-                    user: { _id, email, name, role },
+                    user: { _id, name, role },
                 });
             });
         }

@@ -13,6 +13,7 @@ const UserSchema: Schema = new Schema(
             required: false,
             unique: true,
             lowercase: true,
+            default: 'facebook',
         },
         password: {
             type: Object,
