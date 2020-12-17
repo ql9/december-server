@@ -10,7 +10,7 @@ const UserSchema: Schema = new Schema(
         email: {
             type: String,
             trim: true,
-            required: true,
+            required: false,
             unique: true,
             lowercase: true,
         },
@@ -22,6 +22,10 @@ const UserSchema: Schema = new Schema(
         role: {
             type: String,
             default: 'subscriber',
+        },
+        facebook_id: {
+            type: Number,
+            default: 0,
         },
     },
     {

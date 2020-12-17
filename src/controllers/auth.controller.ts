@@ -138,7 +138,7 @@ export const login = async (req: Request, res: Response) => {
                             name: user.name,
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
-                            username: user.username,
+                            email: user.email,
                         },
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
@@ -220,76 +220,107 @@ export const forgetPassword = async (req: Request, res: Response) => {
     });
 };
 
-// export const google = async (req: Request, res: Response) => {
-//     passport.use(
-//         new GoogleStrategy(
-//             {
-//                 consumerKey: process.env.GOOGLE_APP_ID,
-//                 consumerSecret: process.env.GOOGLE_APP_SECRET,
-//                 callbackURL: 'http://www.example.com/auth/google/callback',
-//             },
-//             function (token, tokenSecret, profile, done) {
-//                 User.findOrCreate({ googleId: profile.id }, function (err, user) {
-//                     return done(err, user);
-//                 });
-//             },
-//         ),
-//     );
-// };
-
 // Google Login
 export const google = async (req: Request, res: Response) => {
     const { idToken } = req.body;
     const client = new OAuth2Client(process.env.GOOGLE_APP_ID);
 
-    await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID }).then(response => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const { email_verified, name, email } = response.payload;
-        if (email_verified) {
-            User.findOne({ email }).then(user => {
-                if (user) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
-                        expiresIn: '7d',
-                    });
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const { _id, email, name, role } = user;
-                    return res.json({
-                        token,
-                        user: { _id, email, name, role },
-                    });
-                } else {
-                    const password = email + process.env.JWT_SECRET;
-                    user = new User({ name, email, password });
-                    user.save((err, data) => {
-                        if (err) {
-                            console.log('ERROR GOOGLE LOGIN ON USER SAVE', err);
-                            return res.status(400).json({
-                                error: 'User signup failed with google',
-                            });
-                        }
+    await client
+        .verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID })
+        .then(response => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const { email_verified, name, email } = response.payload;
+            if (email_verified) {
+                User.findOne({ email }).then(async user => {
+                    if (user) {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+                        const { name, email } = user;
+                        const token = jwt.sign(
+                            {
+                                name: name,
+                                email: email,
+                            },
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            process.env.JWT_SECRET_KEY,
+                            {
+                                expiresIn: '24h',
+                            },
+                        );
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        const { _id, email, name, role } = data;
-                        return res.json({
-                            token,
-                            user: { _id, email, name, role },
+                        const { _id, role } = user;
+                        res.status(200).json({
+                            success: true,
+                            message: 'Correct Details',
+                            token: token,
+                            user: {
+                                _id,
+                                name,
+                                email,
+                                role,
+                            },
                         });
-                    });
-                }
+                    } else {
+                        const password = email + process.env.JWT_SECRET;
+                        const user = new User({
+                            name: name,
+                            email: email,
+                            password: await hash(password, generateSalt(11)),
+                        });
+                        await user
+                            .save()
+                            .then(user => {
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                const { _id, name, email, role } = user;
+                                const token = jwt.sign(
+                                    {
+                                        name: name,
+                                        email: email,
+                                    },
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    process.env.JWT_SECRET_KEY,
+                                    {
+                                        expiresIn: '24h',
+                                    },
+                                );
+                                res.status(200).json({
+                                    success: true,
+                                    message: 'Correct Details',
+                                    token: token,
+                                    user: {
+                                        _id,
+                                        name,
+                                        email,
+                                        role,
+                                    },
+                                });
+                            })
+                            .catch(err => {
+                                res.status(401).json({
+                                    success: false,
+                                    message: err,
+                                });
+                            });
+                    }
+                });
+            } else {
+                return res.status(400).json({
+                    error: 'Google login failed. Try again',
+                });
+            }
+        })
+        .catch(err => {
+            res.status(404).json({
+                success: false,
+                message: 'No token provided',
+                data: err,
             });
-        } else {
-            return res.status(400).json({
-                error: 'Google login failed. Try again',
-            });
-        }
-    });
+        });
 };
 
 export const facebook = async (req: Request, res: Response) => {
@@ -299,14 +330,15 @@ export const facebook = async (req: Request, res: Response) => {
         url: 'https://graph.facebook.com/me',
         method: 'get',
         params: {
-            fields: ['email', 'name'].join(','),
+            fields: ['id', 'email', 'name'].join(','),
             access_token: accessToken,
         },
     });
-    const { email, name } = data; // { id, email, first_name, last_name }
+    const { id, email, name } = data; // { id, email, first_name, last_name }
 
-    User.findOne({ email }).exec((err, user) => {
+    User.findOne({ facbook_id: id }).then(user => {
         if (user) {
+            console.log('alo');
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
@@ -321,7 +353,7 @@ export const facebook = async (req: Request, res: Response) => {
             });
         } else {
             const password = email + process.env.JWT_SECRET;
-            user = new User({ name, email, password });
+            user = new User({ name, email, password, facebook_id: id });
             user.save((err, data) => {
                 if (err) {
                     console.log('ERROR FACEBOOK LOGIN ON USER SAVE', err);
