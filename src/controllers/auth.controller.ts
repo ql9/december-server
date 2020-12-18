@@ -225,102 +225,93 @@ export const google = async (req: Request, res: Response) => {
     const { idToken } = req.body;
     const client = new OAuth2Client(process.env.GOOGLE_APP_ID);
 
-    await client
-        .verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID })
-        .then(response => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const { email_verified, name, email } = response.payload;
-            if (email_verified) {
-                User.findOne({ email }).then(async user => {
-                    if (user) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        const { name, email } = user;
-                        const token = jwt.sign(
-                            {
-                                name: name,
-                                email: email,
-                            },
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            process.env.JWT_SECRET_KEY,
-                            {
-                                expiresIn: '24h',
-                            },
-                        );
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        const { _id, role } = user;
-                        res.status(200).json({
-                            success: true,
-                            message: 'Correct Details',
-                            token: token,
-                            user: {
-                                _id,
-                                name,
-                                email,
-                                role,
-                            },
-                        });
-                    } else {
-                        const password = email + process.env.JWT_SECRET;
-                        const user = new User({
+    await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID }).then(response => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const { email_verified, name, email } = response.payload;
+        if (email_verified) {
+            User.findOne({ email }).then(async user => {
+                if (user) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const { name, email } = user;
+                    const token = jwt.sign(
+                        {
                             name: name,
                             email: email,
-                            password: await hash(password, generateSalt(11)),
-                        });
-                        await user
-                            .save()
-                            .then(user => {
+                        },
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        process.env.JWT_SECRET_KEY,
+                        {
+                            expiresIn: '24h',
+                        },
+                    );
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const { _id, role } = user;
+                    res.status(200).json({
+                        success: true,
+                        message: 'Correct Details',
+                        token: token,
+                        user: {
+                            _id,
+                            name,
+                            email,
+                            role,
+                        },
+                    });
+                } else {
+                    const password = email + process.env.JWT_SECRET;
+                    const user = new User({
+                        name: name,
+                        email: email,
+                        password: await hash(password, generateSalt(11)),
+                    });
+                    await user
+                        .save()
+                        .then(user => {
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            const { _id, name, email, role } = user;
+                            const token = jwt.sign(
+                                {
+                                    name: name,
+                                    email: email,
+                                },
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                 // @ts-ignore
-                                const { _id, name, email, role } = user;
-                                const token = jwt.sign(
-                                    {
-                                        name: name,
-                                        email: email,
-                                    },
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    process.env.JWT_SECRET_KEY,
-                                    {
-                                        expiresIn: '24h',
-                                    },
-                                );
-                                res.status(200).json({
-                                    success: true,
-                                    message: 'Correct Details',
-                                    token: token,
-                                    user: {
-                                        _id,
-                                        name,
-                                        email,
-                                        role,
-                                    },
-                                });
-                            })
-                            .catch(err => {
-                                res.status(401).json({
-                                    success: false,
-                                    message: err,
-                                });
+                                process.env.JWT_SECRET_KEY,
+                                {
+                                    expiresIn: '24h',
+                                },
+                            );
+                            res.status(200).json({
+                                success: true,
+                                message: 'Correct Details',
+                                token: token,
+                                user: {
+                                    _id,
+                                    name,
+                                    email,
+                                    role,
+                                },
                             });
-                    }
-                });
-            } else {
-                return res.status(400).json({
-                    error: 'Google login failed. Try again',
-                });
-            }
-        })
-        .catch(err => {
-            res.status(404).json({
-                success: false,
-                message: 'No token provided',
-                data: err,
+                        })
+                        .catch(err => {
+                            res.status(401).json({
+                                success: false,
+                                message: err,
+                            });
+                        });
+                }
             });
-        });
+        } else {
+            return res.status(400).json({
+                error: 'Google login failed. Try again',
+            });
+        }
+    });
 };
 
 export const facebook = async (req: Request, res: Response) => {
@@ -334,11 +325,14 @@ export const facebook = async (req: Request, res: Response) => {
             access_token: accessToken,
         },
     });
-    const { id, email, name } = data; // { id, email, first_name, last_name }
+    let { email } = data;
+    const { id, name } = data; // { id, email, name }
+    if (!email) {
+        email = id + '@facebook.com';
+    }
 
-    User.findOne({ facbook_id: id }).then(async user => {
+    User.findOne({ email }).then(async user => {
         if (user) {
-            console.log('alo');
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
@@ -349,28 +343,30 @@ export const facebook = async (req: Request, res: Response) => {
             const { _id, name, role } = user;
             return res.json({
                 token,
-                user: { _id, name, role },
+                user: { _id, name, email, role },
             });
         } else {
-            user = new User({ name, email, password: await hash('password', generateSalt(11)), facebook_id: id });
-            user.save((err, data) => {
-                if (err) {
-                    console.log('ERROR FACEBOOK LOGIN ON USER SAVE', err);
-                    return res.status(400).json({
-                        error: 'User signup failed with facebook',
+            user = new User({ name, email, password: await hash('password', generateSalt(11)) });
+            user.save()
+                .then(data => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const { _id, name, role } = data;
+                    return res.json({
+                        token,
+                        user: { _id, name, email, role },
                     });
-                }
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const { _id, name, role } = data;
-                return res.json({
-                    token,
-                    user: { _id, name, role },
+                })
+                .catch(err => {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'User signup failed with facebook',
+                        data: err,
+                    });
                 });
-            });
         }
     });
 };

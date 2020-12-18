@@ -20,7 +20,7 @@ public/css/main.css
 coverage
 
 # API keys and secrets
-.env
+# .env
 
 # Dependency directory
 node_modules
@@ -111,7 +111,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+# .env
 .env.test
 
 # parcel-bundler cache (https://parceljs.org/)
