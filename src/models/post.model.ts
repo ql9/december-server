@@ -1,25 +1,24 @@
 import { model, Schema } from 'mongoose';
 
-const UserSchema: Schema = new Schema(
+const PostSchema: Schema = new Schema(
     {
-        name: {
+        userId: {
             type: String,
             trim: true,
             required: true,
         },
-        email: {
+        image: {
             type: String,
             trim: true,
             required: true,
             lowercase: true,
             unique: true,
         },
-        password: {
-            type: Object,
+        content: {
+            type: String,
             required: true,
-            select: false,
         },
-        follower: {
+        likeBy: {
             type: Array,
             required: false,
         },
@@ -29,4 +28,4 @@ const UserSchema: Schema = new Schema(
     },
 );
 
-export const User = model('User', UserSchema);
+export const Post = model('Post', PostSchema);

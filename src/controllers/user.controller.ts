@@ -19,26 +19,25 @@ export const readUser = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
+    const { email, name, password } = req.body;
     await User.findById(req.params.userId)
         .then(async user => {
-            if (req.body.username) {
+            if (email) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                user.username = req.body.username;
+                user.email = email;
             }
-            if (req.body.password) {
+            if (password) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                user.password = await hash(req.body.password, generateSalt(10));
+                user.password = await hash(password, generateSalt(11));
             }
-            if (req.body.name) {
+            if (name) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                user.name = req.body.name;
+                user.name = name;
             }
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            await user.save().then(() => {
+            await user?.save().then(() => {
                 res.status(200).json({
                     success: true,
                     message: 'Updated',

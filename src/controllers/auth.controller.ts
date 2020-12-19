@@ -83,7 +83,7 @@ export const activate = async (req: Request, res: Response) => {
         jwt.verify(token, process.env.JWT_SECRET_KEY, async (err: any) => {
             if (err) {
                 console.log(err);
-                res.status(401).json({
+                return res.status(401).json({
                     success: false,
                     message: 'Expired link. Signup again',
                 });
@@ -91,22 +91,24 @@ export const activate = async (req: Request, res: Response) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const { name, email, password } = jwt.decode(token);
+                const follower: string[] = [];
                 const user = new User({
                     name: name,
                     email: email,
                     password: await hash(password, generateSalt(11)),
+                    follower: follower,
                 });
                 await user
                     .save()
                     .then(user => {
-                        res.status(201).json({
+                        return res.status(201).json({
                             success: true,
                             message: 'Sign up success',
                             data: user,
                         });
                     })
                     .catch(err => {
-                        res.status(401).json({
+                        return res.status(401).json({
                             success: false,
                             message: err,
                         });
@@ -114,7 +116,7 @@ export const activate = async (req: Request, res: Response) => {
             }
         });
     } else {
-        res.status(403).json({
+        return res.status(403).json({
             success: false,
             message: 'No token provided',
         });
@@ -149,8 +151,8 @@ export const login = async (req: Request, res: Response) => {
                     );
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    const { _id, name, email, role } = user;
-                    res.status(200).json({
+                    const { _id, name, email, follower } = user;
+                    return res.status(200).json({
                         success: true,
                         message: 'Correct Details',
                         token: token,
@@ -158,11 +160,11 @@ export const login = async (req: Request, res: Response) => {
                             _id,
                             name,
                             email,
-                            role,
+                            follower,
                         },
                     });
                 } else {
-                    res.status(400).json({
+                    return res.status(400).json({
                         success: false,
                         message: 'Invalid Username or Password',
                     });
@@ -249,7 +251,7 @@ export const google = async (req: Request, res: Response) => {
                     );
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    const { _id, role } = user;
+                    const { _id, follower } = user;
                     res.status(200).json({
                         success: true,
                         message: 'Correct Details',
@@ -258,22 +260,24 @@ export const google = async (req: Request, res: Response) => {
                             _id,
                             name,
                             email,
-                            role,
+                            follower,
                         },
                     });
                 } else {
                     const password = email + process.env.JWT_SECRET;
+                    const follower: string[] = [];
                     const user = new User({
                         name: name,
                         email: email,
                         password: await hash(password, generateSalt(11)),
+                        follower: follower,
                     });
                     await user
                         .save()
                         .then(user => {
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
-                            const { _id, name, email, role } = user;
+                            const { _id, name, email, follower } = user;
                             const token = jwt.sign(
                                 {
                                     name: name,
@@ -294,7 +298,7 @@ export const google = async (req: Request, res: Response) => {
                                     _id,
                                     name,
                                     email,
-                                    role,
+                                    follower,
                                 },
                             });
                         })
@@ -340,33 +344,43 @@ export const facebook = async (req: Request, res: Response) => {
             });
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const { _id, name, role } = user;
+            const { _id, name, follower } = user;
             return res.json({
                 token,
-                user: { _id, name, email, role },
+                user: {
+                    _id,
+                    name,
+                    email,
+                    follower,
+                },
             });
         } else {
-            user = new User({ name, email, password: await hash('password', generateSalt(11)) });
-            user.save()
-                .then(data => {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const { _id, name, role } = data;
-                    return res.json({
-                        token,
-                        user: { _id, name, email, role },
-                    });
-                })
-                .catch(err => {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'User signup failed with facebook',
-                        data: err,
-                    });
+            const password = email + process.env.JWT_SECRET;
+            const follower: string[] = [];
+            user = new User({
+                name: name,
+                email: email,
+                password: await hash(password, generateSalt(11)),
+                follower: follower,
+            });
+
+            user.save().then(data => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const { _id, name, follower } = data;
+                return res.json({
+                    token,
+                    user: {
+                        _id,
+                        name,
+                        email,
+                        follower,
+                    },
                 });
+            });
         }
     });
 };

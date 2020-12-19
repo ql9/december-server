@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 
 import * as userController from './controllers/user.controller';
 import * as authController from './controllers/auth.controller';
-
+import * as postController from './controllers/post.controller';
 dotenv.config();
 
 const app = express();
@@ -45,6 +45,10 @@ mongoose
         console.log('Could not connect to the database. Exiting now...', err);
         process.exit();
     });
+
+//posts
+app.post('/post/create', postController.create);
+app.put('/post/like/:postId/:userId', postController.like);
 
 app.post('/register', authController.register);
 app.post('/activation', authController.activate);
