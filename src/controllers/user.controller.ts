@@ -7,7 +7,8 @@ export const readUser = async (req: Request, res: Response) => {
         .then(user => {
             return res.status(200).json({
                 success: true,
-                data: user,
+                message: 'read success',
+                user,
             });
         })
         .catch(err => {

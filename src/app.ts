@@ -46,10 +46,6 @@ mongoose
         process.exit();
     });
 
-//posts
-app.post('/post/create', postController.create);
-app.put('/post/like/:postId/:userId', postController.like);
-
 app.post('/register', authController.register);
 app.post('/activation', authController.activate);
 app.post('/login', authController.login);
@@ -88,5 +84,9 @@ app.put('/users/:userId', userController.updateUser);
 
 // Delete user by id
 app.delete('/users/:userId', userController.deleteUser);
+
+//posts
+app.post('/post/create', postController.create);
+app.put('/post/like/:postId/:userId', postController.like);
 
 export default app;
