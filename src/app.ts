@@ -2,12 +2,15 @@ import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import * as bodyParser from 'body-parser';
-const cors = require('cors');
+import cors from 'cors';
 import dotenv from 'dotenv';
 
 import * as userController from './controllers/user.controller';
 import * as authController from './controllers/auth.controller';
 import * as postController from './controllers/post.controller';
+import * as commentController from './controllers/comment.controller';
+import * as followController from './controllers/follow.controller';
+
 dotenv.config();
 
 const app = express();
@@ -76,17 +79,25 @@ app.use((req: Request, res: Response, next) => {
     }
 });
 
-// Get information of user by id
+// user
 app.get('/users/:userId', userController.readUser);
-
-// Update information of user by id
 app.put('/users/:userId', userController.updateUser);
-
-// Delete user by id
 app.delete('/users/:userId', userController.deleteUser);
 
-//posts
+// posts
 app.post('/post/create', postController.create);
+app.put('/post/update', postController.update);
+app.delete('/post/delete/:postId', postController.deletePost);
 app.put('/post/like/:postId/:userId', postController.like);
+app.put('/post/unlike/:postId/:userId', postController.unLike);
+
+// comment
+app.post('/comment/post', commentController.create);
+app.put('/comment/edit', commentController.edit);
+app.delete('/comment/delete/:commentId/:userId', commentController.deleteComment);
+
+// follow
+app.put('/follow/:userId/:followerId', followController.follow);
+app.put('/unfollow/:userId/:followerId', followController.unFollow);
 
 export default app;

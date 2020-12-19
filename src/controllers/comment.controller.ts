@@ -16,14 +16,14 @@ export const create = async (req: Request, res: Response) => {
             res.status(201).json({
                 success: true,
                 message: 'add comment',
-                data: comment,
+                comment,
             }),
         )
         .catch(err =>
             res.status(401).json({
                 success: false,
                 message: 'error when add comment to this post',
-                data: err,
+                err,
             }),
         );
 };
@@ -40,7 +40,7 @@ export const edit = async (req: Request, res: Response) => {
                 res.status(200).json({
                     success: true,
                     message: 'edited comment',
-                    data: data,
+                    data,
                 }),
             );
         })
@@ -48,7 +48,7 @@ export const edit = async (req: Request, res: Response) => {
             res.status(401).json({
                 success: false,
                 message: 'error when edit comment',
-                data: err,
+                err,
             }),
         );
 };
@@ -78,7 +78,7 @@ export const deleteComment = async (req: Request, res: Response) => {
             res.status(404).json({
                 success: false,
                 message: 'cannot find comment',
-                data: err,
+                err,
             }),
         );
 };

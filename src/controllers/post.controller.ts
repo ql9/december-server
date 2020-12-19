@@ -17,14 +17,14 @@ export const create = async (req: Request, res: Response) => {
             res.status(201).json({
                 success: true,
                 message: 'create post success',
-                data: post,
+                post,
             });
         })
         .catch(err => {
             res.status(401).json({
                 success: false,
                 message: 'error when create post',
-                data: err,
+                err,
             });
         });
 };
@@ -35,13 +35,13 @@ export const read = async (req: Request, res: Response) => {
         .then(post =>
             res.status(200).json({
                 success: true,
-                data: post,
+                post,
             }),
         )
         .catch(err => {
             res.status(500).json({
                 success: false,
-                data: err,
+                err,
             });
         });
 };
@@ -67,14 +67,14 @@ export const update = async (req: Request, res: Response) => {
                     res.status(200).json({
                         success: true,
                         message: 'updated post',
-                        data: post,
+                        post,
                     });
                 })
                 .catch(err => {
                     res.status(500).json({
                         success: false,
                         message: 'error when edit post',
-                        data: err,
+                        err,
                     });
                 });
         })
@@ -117,14 +117,14 @@ export const like = async (req: Request, res: Response) => {
                     return res.status(201).json({
                         success: true,
                         message: 'Liked',
-                        data: data,
+                        data,
                     });
                 })
                 .catch(err => {
                     return res.status(500).json({
                         success: false,
                         message: 'error when like post',
-                        data: err,
+                        err,
                     });
                 });
         })
@@ -132,7 +132,40 @@ export const like = async (req: Request, res: Response) => {
             return res.status(404).json({
                 success: false,
                 message: 'cannot find comment',
-                data: err,
+                err,
+            });
+        });
+};
+
+export const unLike = async (req: Request, res: Response) => {
+    const { postId, userId } = req.params;
+    await Post.findById(postId)
+        .then(async post => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            post.likeBy.pull(userId);
+            await post
+                ?.save()
+                .then(data => {
+                    return res.status(201).json({
+                        success: true,
+                        message: 'Liked',
+                        data,
+                    });
+                })
+                .catch(err => {
+                    return res.status(500).json({
+                        success: false,
+                        message: 'error when unlike post',
+                        err,
+                    });
+                });
+        })
+        .catch(err => {
+            return res.status(404).json({
+                success: false,
+                message: 'cannot find comment',
+                err,
             });
         });
 };

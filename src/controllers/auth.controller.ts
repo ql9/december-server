@@ -104,7 +104,7 @@ export const activate = async (req: Request, res: Response) => {
                         return res.status(201).json({
                             success: true,
                             message: 'Sign up success',
-                            data: user,
+                            user,
                         });
                     })
                     .catch(err => {
