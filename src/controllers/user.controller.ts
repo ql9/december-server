@@ -20,13 +20,13 @@ export const readUser = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-    const { email, name, password } = req.body;
+    const { avatar, name, password } = req.body;
     await User.findById(req.params.userId)
         .then(async user => {
-            if (email) {
+            if (avatar) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                user.email = email;
+                user.avatar = avatar;
             }
             if (password) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

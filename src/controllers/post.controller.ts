@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 
 export const create = async (req: Request, res: Response) => {
     const { image, content, userId } = req.body;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const likeBy: string[] = [];
     const post = new Post({
         userId,
@@ -35,12 +37,14 @@ export const read = async (req: Request, res: Response) => {
         .then(post =>
             res.status(200).json({
                 success: true,
+                message: 'get post',
                 post,
             }),
         )
         .catch(err => {
             res.status(500).json({
                 success: false,
+                message: 'can not read post',
                 err,
             });
         });
@@ -149,7 +153,7 @@ export const unLike = async (req: Request, res: Response) => {
                 .then(data => {
                     return res.status(201).json({
                         success: true,
-                        message: 'Liked',
+                        message: 'unLiked',
                         data,
                     });
                 })

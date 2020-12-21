@@ -7,6 +7,11 @@ const UserSchema: Schema = new Schema(
             trim: true,
             required: true,
         },
+        avatar: {
+            type: String,
+            trim: true,
+            default: 'https://icon-library.com/images/default-profile-icon/default-profile-icon-5.jpg',
+        },
         email: {
             type: String,
             trim: true,

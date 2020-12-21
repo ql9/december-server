@@ -10,24 +10,12 @@ import * as authController from './controllers/auth.controller';
 import * as postController from './controllers/post.controller';
 import * as commentController from './controllers/comment.controller';
 import * as followController from './controllers/follow.controller';
+import * as dashboardController from './controllers/dashboard.controller';
 
 dotenv.config();
-
 const app = express();
 
-//use cors middleware
-// app.use(
-//     cors({
-//         allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token'],
-//         credentials: true,
-//         methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-//         origin: process.env.APP_URL,
-//         preflightContinue: false,
-//     }),
-// );
-
 app.use(cors());
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -85,19 +73,25 @@ app.put('/users/:userId', userController.updateUser);
 app.delete('/users/:userId', userController.deleteUser);
 
 // posts
-app.post('/post/create', postController.create);
-app.put('/post/update', postController.update);
-app.delete('/post/delete/:postId', postController.deletePost);
+app.get('/post/:postId', postController.read);
+app.post('/post', postController.create);
+app.put('/post', postController.update);
+app.delete('/post/:postId', postController.deletePost);
 app.put('/post/like/:postId/:userId', postController.like);
 app.put('/post/unlike/:postId/:userId', postController.unLike);
 
 // comment
-app.post('/comment/post', commentController.create);
-app.put('/comment/edit', commentController.edit);
+app.post('/comment', commentController.create);
+app.put('/comment', commentController.edit);
 app.delete('/comment/delete/:commentId/:userId', commentController.deleteComment);
 
 // follow
 app.put('/follow/:userId/:followerId', followController.follow);
 app.put('/unfollow/:userId/:followerId', followController.unFollow);
+
+// get posts and comments
+app.get('/:userId', dashboardController.getPosts);
+// app.get('/', dashboardController.getPostsNoFollower);
+app.get('/comment/:postId', dashboardController.getCommentByPost);
 
 export default app;

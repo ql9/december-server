@@ -3,13 +3,11 @@ import { Request, Response } from 'express';
 
 export const create = async (req: Request, res: Response) => {
     const { userId, postId, content } = req.body;
-
     const comment = new Comment({
         userId,
         postId,
         content,
     });
-
     await comment
         .save()
         .then(comment =>
@@ -30,7 +28,6 @@ export const create = async (req: Request, res: Response) => {
 
 export const edit = async (req: Request, res: Response) => {
     const { commentId, content } = req.body;
-
     await Comment.findById(commentId)
         .then(async comment => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -55,7 +52,6 @@ export const edit = async (req: Request, res: Response) => {
 
 export const deleteComment = async (req: Request, res: Response) => {
     const { commentId, userId } = req.params;
-
     await Comment.findById(commentId)
         .then(async comment => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

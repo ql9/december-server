@@ -11,8 +11,6 @@ const PostSchema: Schema = new Schema(
             type: String,
             trim: true,
             required: true,
-            lowercase: true,
-            unique: true,
         },
         content: {
             type: String,

@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 
 export const follow = async (req: Request, res: Response) => {
     const { userId, followerId } = req.params;
-
     await User.findById(followerId)
         .then(async user => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -37,7 +36,6 @@ export const follow = async (req: Request, res: Response) => {
 
 export const unFollow = async (req: Request, res: Response) => {
     const { userId, followerId } = req.body;
-
     await User.findById(followerId)
         .then(async user => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
