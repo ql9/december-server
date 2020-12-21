@@ -225,96 +225,103 @@ export const forgetPassword = async (req: Request, res: Response) => {
 // Google Login
 export const google = async (req: Request, res: Response) => {
     const { idToken } = req.body;
-    const client = new OAuth2Client(process.env.GOOGLE_APP_ID);
+    if (idToken) {
+        const client = new OAuth2Client(process.env.GOOGLE_APP_ID);
 
-    await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID }).then(response => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const { email_verified, name, email } = response.payload;
-        if (email_verified) {
-            User.findOne({ email }).then(async user => {
-                if (user) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const { name, email } = user;
-                    const token = jwt.sign(
-                        {
-                            name: name,
-                            email: email,
-                        },
+        await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID }).then(response => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const { email_verified, name, email } = response.payload;
+            if (email_verified) {
+                User.findOne({ email }).then(async user => {
+                    if (user) {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        process.env.JWT_SECRET_KEY,
-                        {
-                            expiresIn: '24h',
-                        },
-                    );
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const { _id, follower } = user;
-                    res.status(200).json({
-                        success: true,
-                        message: 'Correct Details',
-                        token: token,
-                        user: {
-                            _id,
-                            name,
-                            email,
-                            follower,
-                        },
-                    });
-                } else {
-                    const password = email + process.env.JWT_SECRET;
-                    const follower: string[] = [];
-                    const user = new User({
-                        name: name,
-                        email: email,
-                        password: await hash(password, generateSalt(11)),
-                        follower: follower,
-                    });
-                    await user
-                        .save()
-                        .then(user => {
+                        const { name, email } = user;
+                        const token = jwt.sign(
+                            {
+                                name: name,
+                                email: email,
+                            },
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
-                            const { _id, name, email, follower } = user;
-                            const token = jwt.sign(
-                                {
-                                    name: name,
-                                    email: email,
-                                },
+                            process.env.JWT_SECRET_KEY,
+                            {
+                                expiresIn: '24h',
+                            },
+                        );
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        const { _id, follower } = user;
+                        res.status(200).json({
+                            success: true,
+                            message: 'Correct Details',
+                            token: token,
+                            user: {
+                                _id,
+                                name,
+                                email,
+                                follower,
+                            },
+                        });
+                    } else {
+                        const password = email + process.env.JWT_SECRET;
+                        const follower: string[] = [];
+                        const user = new User({
+                            name: name,
+                            email: email,
+                            password: await hash(password, generateSalt(11)),
+                            follower: follower,
+                        });
+                        await user
+                            .save()
+                            .then(user => {
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                 // @ts-ignore
-                                process.env.JWT_SECRET_KEY,
-                                {
-                                    expiresIn: '24h',
-                                },
-                            );
-                            res.status(200).json({
-                                success: true,
-                                message: 'Correct Details',
-                                token: token,
-                                user: {
-                                    _id,
-                                    name,
-                                    email,
-                                    follower,
-                                },
+                                const { _id, name, email, follower } = user;
+                                const token = jwt.sign(
+                                    {
+                                        name: name,
+                                        email: email,
+                                    },
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    process.env.JWT_SECRET_KEY,
+                                    {
+                                        expiresIn: '24h',
+                                    },
+                                );
+                                res.status(200).json({
+                                    success: true,
+                                    message: 'Correct Details',
+                                    token: token,
+                                    user: {
+                                        _id,
+                                        name,
+                                        email,
+                                        follower,
+                                    },
+                                });
+                            })
+                            .catch(err => {
+                                res.status(401).json({
+                                    success: false,
+                                    message: err,
+                                });
                             });
-                        })
-                        .catch(err => {
-                            res.status(401).json({
-                                success: false,
-                                message: err,
-                            });
-                        });
-                }
-            });
-        } else {
-            return res.status(400).json({
-                error: 'Google login failed. Try again',
-            });
-        }
+                    }
+                });
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Google login failed. Try again',
+                });
+            }
+        });
+    }
+    return res.status(401).json({
+        success: false,
+        message: 'no token provide',
     });
 };
 
