@@ -13,6 +13,118 @@ function compare(a: any, b: any) {
     return 0;
 }
 
+export const get = async (req: Request, res: Response) => {
+    await Post.find()
+        .then(posts => {
+            if (posts.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'no post yet',
+                });
+            }
+            posts = posts.sort(compare);
+            const data: {
+                userId: string;
+                name: string;
+                avatar: string;
+                postId: string;
+                content: string;
+                image: string;
+                likeBy: Array<string>;
+            }[] = [];
+            posts.forEach(async post => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const { _id, name, avatar } = await User.findById(post.userId);
+                data.push({
+                    userId: _id,
+                    name: name,
+                    avatar: avatar,
+                    postId: post._id,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    content: post.content,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    image: post.image,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    likeBy: post.likeBy,
+                });
+                if (data.length === posts.length) {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'get list post',
+                        data,
+                    });
+                }
+            });
+        })
+        .catch(err =>
+            res.status(500).json({
+                success: false,
+                message: 'cannot get posts',
+                err,
+            }),
+        );
+};
+
+export const getPostsByUserId = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    await Post.find({ userId: userId })
+        .then(posts => {
+            if (posts.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'no post yet',
+                });
+            }
+            posts = posts.sort(compare);
+            const data: {
+                userId: string;
+                name: string;
+                avatar: string;
+                postId: string;
+                content: string;
+                image: string;
+                likeBy: Array<string>;
+            }[] = [];
+            posts.forEach(async post => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const { _id, name, avatar } = await User.findById(post.userId);
+                data.push({
+                    userId: _id,
+                    name: name,
+                    avatar: avatar,
+                    postId: post._id,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    content: post.content,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    image: post.image,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    likeBy: post.likeBy,
+                });
+                if (data.length === posts.length) {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'get list post',
+                        data,
+                    });
+                }
+            });
+        })
+        .catch(err =>
+            res.status(500).json({
+                success: false,
+                message: 'cannot get posts',
+                err,
+            }),
+        );
+};
 export const getPosts = async (req: Request, res: Response) => {
     const { userId } = req.params;
     await User.find({ follower: userId })
