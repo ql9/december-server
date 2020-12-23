@@ -1,6 +1,7 @@
-import express, { Request, Response } from 'express';
+// import express, { Request, Response } from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -11,6 +12,7 @@ import * as postController from './controllers/post.controller';
 import * as commentController from './controllers/comment.controller';
 import * as followController from './controllers/follow.controller';
 import * as dashboardController from './controllers/dashboard.controller';
+import { uploadImage } from './controllers/upload.controller';
 
 dotenv.config();
 const app = express();
@@ -44,28 +46,32 @@ app.post('/auth/google', authController.google);
 app.post('/auth/facebook', authController.facebook);
 
 // Check token, ignored when create account or login
-app.use((req: Request, res: Response, next) => {
-    const token = req.headers.authorization;
-    if (token) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        jwt.verify(token, process.env.JWT_SECRET_KEY, function (err: any, decoded: any) {
-            if (err) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Failed to authenticate token',
-                });
-            }
-            req.accepted = decoded;
-            next();
-        });
-    } else {
-        res.status(403).json({
-            success: false,
-            message: 'No token provided',
-        });
-    }
-});
+// app.use((req: Request, res: Response, next) => {
+//     const token = req.headers.authorization;
+//     if (token) {
+//         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//         // @ts-ignore
+//         jwt.verify(token, process.env.JWT_SECRET_KEY, function (err: any, decoded: any) {
+//             if (err) {
+//                 return res.status(403).json({
+//                     success: false,
+//                     message: 'Failed to authenticate token',
+//                 });
+//             }
+//             req.accepted = decoded;
+//             next();
+//         });
+//     } else {
+//         res.status(403).json({
+//             success: false,
+//             message: 'No token provided',
+//         });
+//     }
+// });
+
+// images
+app.use('/images', express.static('images'));
+app.post('/upload', uploadImage);
 
 // user
 app.get('/users/:userId', userController.readUser);
