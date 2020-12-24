@@ -47,7 +47,10 @@ app.post('/auth/facebook', authController.facebook);
 
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {
-    const token = req.headers.authorization;
+    let token = req.headers.authorization;
+    if (!token) {
+        token = req.headers.cookie?.split('=')[1];
+    }
     if (token) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

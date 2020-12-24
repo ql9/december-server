@@ -11,10 +11,13 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage }).single('file');
+export const upload = multer({ storage: storage }).single('file');
 
 export const uploadImage = (req: Request, res: Response) => {
     upload(req, res, (err: any) => {
+        // console.log(req.file);
+        const { content } = req.body;
+        console.log(content);
         if (err instanceof multer.MulterError) {
             return res.status(500).json(err);
         } else if (err) {

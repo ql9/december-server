@@ -1,34 +1,44 @@
 import { Post } from '../models/post.model';
 import { Request, Response } from 'express';
 
-export const create = async (req: Request, res: Response) => {
-    const { image, content, userId } = req.body;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const likeBy: string[] = [];
-    const post = new Post({
-        userId,
-        image,
-        content,
-        likeBy,
-    });
+import { upload } from './upload.controller';
+import multer from 'multer';
 
-    await post
-        .save()
-        .then(post => {
-            res.status(201).json({
-                success: true,
-                message: 'create post success',
-                post,
-            });
-        })
-        .catch(err => {
-            res.status(401).json({
-                success: false,
-                message: 'error when create post',
-                err,
-            });
+export const create = async (req: Request, res: Response) => {
+    upload(req, res, async (err: any) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json(err);
+        } else if (err) {
+            return res.status(500).json(err);
+        }
+        const { content, userId } = req.body;
+        const image = `${process.env.APP_URL}/` + req.file.path;
+        console.log(image);
+        const likeBy: string[] = [];
+        const post = new Post({
+            userId,
+            image,
+            content,
+            likeBy,
         });
+
+        await post
+            .save()
+            .then(post => {
+                res.status(201).json({
+                    success: true,
+                    message: 'create post success',
+                    post,
+                });
+            })
+            .catch(err => {
+                res.status(401).json({
+                    success: false,
+                    message: 'error when create post',
+                    err,
+                });
+            });
+    });
 };
 
 export const read = async (req: Request, res: Response) => {
