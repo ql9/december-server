@@ -160,7 +160,7 @@ export const like = async (req: Request, res: Response) => {
 };
 
 export const unLike = async (req: Request, res: Response) => {
-    const { postId, userId } = req.params;
+    const { postId, userId } = req.body;
     await Post.findById(postId)
         .then(async post => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
