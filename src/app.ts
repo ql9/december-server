@@ -77,6 +77,7 @@ app.use('/images', express.static('images'));
 app.post('/upload', uploadImage);
 
 // user
+app.get('/users', userController.getAll);
 app.get('/users/:userId', userController.readUser);
 app.put('/users/:userId', userController.updateUser);
 app.delete('/users/:userId', userController.deleteUser);

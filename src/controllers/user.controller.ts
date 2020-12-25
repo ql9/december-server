@@ -2,6 +2,24 @@ import { User } from '../models/user.model';
 import { Request, Response } from 'express';
 import { hash, generateSalt } from '../hash';
 
+export const getAll = async (req: Request, res: Response) => {
+    await User.find()
+        .then(users =>
+            res.status(200).json({
+                success: true,
+                message: 'list all users',
+                users,
+            }),
+        )
+        .catch(err =>
+            res.status(500).json({
+                success: false,
+                message: 'error when get list all users',
+                err,
+            }),
+        );
+};
+
 export const readUser = async (req: Request, res: Response) => {
     await User.findById(req.params.userId)
         .then(user => {
