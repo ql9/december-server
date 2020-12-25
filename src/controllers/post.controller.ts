@@ -61,44 +61,52 @@ export const read = async (req: Request, res: Response) => {
 };
 
 export const update = async (req: Request, res: Response) => {
-    const { postId, image, content } = req.body;
+    upload(req, res, async (err: any) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json(err);
+        } else if (err) {
+            return res.status(500).json(err);
+        }
+        const { postId, content } = req.body;
+        const image = `${process.env.APP_URL}/` + req.file.path;
 
-    await Post.findById(postId)
-        .then(async post => {
-            if (image) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                post.image = image;
-            }
-            if (content) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                post.content = content;
-            }
-            await post
-                ?.save()
-                .then(() => {
-                    res.status(200).json({
-                        success: true,
-                        message: 'updated post',
-                        post,
+        await Post.findById(postId)
+            .then(async post => {
+                if (image) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    post.image = image;
+                }
+                if (content) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    post.content = content;
+                }
+                await post
+                    ?.save()
+                    .then(() => {
+                        res.status(200).json({
+                            success: true,
+                            message: 'updated post',
+                            post,
+                        });
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            success: false,
+                            message: 'error when edit post',
+                            err,
+                        });
                     });
-                })
-                .catch(err => {
-                    res.status(500).json({
-                        success: false,
-                        message: 'error when edit post',
-                        err,
-                    });
-                });
-        })
-        .catch(err =>
-            res.status(404).json({
-                success: false,
-                message: 'cannot find comment',
-                data: err,
-            }),
-        );
+            })
+            .catch(err =>
+                res.status(404).json({
+                    success: false,
+                    message: 'cannot find comment',
+                    data: err,
+                }),
+            );
+    });
 };
 
 export const deletePost = async (req: Request, res: Response) => {

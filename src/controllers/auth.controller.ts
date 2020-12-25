@@ -78,9 +78,7 @@ export const activate = async (req: Request, res: Response) => {
     const { token } = req.body;
 
     if (token) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        jwt.verify(token, process.env.JWT_SECRET_KEY, async (err: any) => {
+        jwt.verify(token, `${process.env.JWT_SECRET_KEY}`, async (err: any) => {
             if (err) {
                 console.log(err);
                 return res.status(401).json({
@@ -142,9 +140,7 @@ export const login = async (req: Request, res: Response) => {
                             // @ts-ignore
                             email: user.email,
                         },
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        process.env.JWT_SECRET_KEY,
+                        `${process.env.JWT_SECRET_KEY}`,
                         {
                             expiresIn: '24h',
                         },
@@ -186,9 +182,7 @@ export const forgetPassword = async (req: Request, res: Response) => {
             {
                 _id: user?._id,
             },
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            process.env.JWT_RESET_PASSWORD,
+            `${process.env.JWT_RESET_PASSWORD}`,
             {
                 expiresIn: '10m',
             },
@@ -243,9 +237,7 @@ export const google = async (req: Request, res: Response) => {
                                 name: name,
                                 email: email,
                             },
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            process.env.JWT_SECRET_KEY,
+                            `${process.env.JWT_SECRET_KEY}`,
                             {
                                 expiresIn: '24h',
                             },
@@ -265,7 +257,7 @@ export const google = async (req: Request, res: Response) => {
                             },
                         });
                     } else {
-                        const password = email + process.env.JWT_SECRET;
+                        const password = email + `${process.env.JWT_SECRET_KEY}`;
                         const follower: string[] = [];
                         const user = new User({
                             name: name,
@@ -284,9 +276,7 @@ export const google = async (req: Request, res: Response) => {
                                         name: name,
                                         email: email,
                                     },
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    process.env.JWT_SECRET_KEY,
+                                    `${process.env.JWT_SECRET_KEY}`,
                                     {
                                         expiresIn: '24h',
                                     },
@@ -345,9 +335,7 @@ export const facebook = async (req: Request, res: Response) => {
 
     User.findOne({ email }).then(async user => {
         if (user) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
+            const token = jwt.sign({ _id: user._id }, `${process.env.JWT_SECRET_KEY}`, {
                 expiresIn: '7d',
             });
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -363,7 +351,7 @@ export const facebook = async (req: Request, res: Response) => {
                 },
             });
         } else {
-            const password = email + process.env.JWT_SECRET;
+            const password = email + `${process.env.JWT_SECRET_KEY}`;
             const follower: string[] = [];
             user = new User({
                 name: name,
@@ -373,9 +361,7 @@ export const facebook = async (req: Request, res: Response) => {
             });
 
             user.save().then(data => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+                const token = jwt.sign({ _id: data._id }, `${process.env.JWT_SECRET_KEY}`, { expiresIn: '7d' });
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const { _id, name, follower } = data;
