@@ -45,6 +45,8 @@ app.post('/login', authController.login);
 app.post('/auth/google', authController.google);
 app.post('/auth/facebook', authController.facebook);
 
+app.use('/images', express.static('images'));
+
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {
     let token = req.headers.authorization;
@@ -73,7 +75,6 @@ app.use((req: Request, res: Response, next) => {
 });
 
 // images
-app.use('/images', express.static('images'));
 app.post('/upload', uploadImage);
 
 // user

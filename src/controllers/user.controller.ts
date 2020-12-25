@@ -64,9 +64,10 @@ export const updateUser = async (req: Request, res: Response) => {
             });
         })
         .catch(err => {
-            res.status(500).json({
+            res.status(404).json({
                 success: false,
-                message: err,
+                message: 'cant find user',
+                err,
             });
         });
 };
