@@ -62,6 +62,9 @@ export const read = async (req: Request, res: Response) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 image: post.content,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                likeBy: post.likeBy,
             };
             return res.status(200).json({
                 success: true,
