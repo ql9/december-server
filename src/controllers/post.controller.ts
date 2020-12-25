@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 
 import { upload } from './upload.controller';
 import multer from 'multer';
+import { User } from '../models/user.model';
 
 export const create = async (req: Request, res: Response) => {
     upload(req, res, async (err: any) => {
@@ -44,13 +45,30 @@ export const create = async (req: Request, res: Response) => {
 export const read = async (req: Request, res: Response) => {
     const { postId } = req.params;
     await Post.findById(postId)
-        .then(post =>
-            res.status(200).json({
+        .then(async post => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const { name, avatar } = await User.findById(post.userId);
+            const data = {
+                postId: post?._id,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                userId: post.userId,
+                name: name,
+                avatar: avatar,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                content: post.content,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                image: post.content,
+            };
+            return res.status(200).json({
                 success: true,
-                message: 'get post',
-                post,
-            }),
-        )
+                message: 'get post ne',
+                data,
+            });
+        })
         .catch(err => {
             res.status(500).json({
                 success: false,
