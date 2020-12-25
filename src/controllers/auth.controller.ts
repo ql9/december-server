@@ -253,7 +253,7 @@ export const google = async (req: Request, res: Response) => {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         const { _id, follower } = user;
-                        res.status(200).json({
+                        return res.status(200).json({
                             success: true,
                             message: 'Correct Details',
                             token: token,
@@ -291,7 +291,7 @@ export const google = async (req: Request, res: Response) => {
                                         expiresIn: '24h',
                                     },
                                 );
-                                res.status(200).json({
+                                return res.status(200).json({
                                     success: true,
                                     message: 'Correct Details',
                                     token: token,
@@ -304,7 +304,7 @@ export const google = async (req: Request, res: Response) => {
                                 });
                             })
                             .catch(err => {
-                                res.status(401).json({
+                                return res.status(401).json({
                                     success: false,
                                     message: err,
                                 });
@@ -318,11 +318,12 @@ export const google = async (req: Request, res: Response) => {
                 });
             }
         });
+    } else {
+        return res.status(401).json({
+            success: false,
+            message: 'no token provide',
+        });
     }
-    return res.status(401).json({
-        success: false,
-        message: 'no token provide',
-    });
 };
 
 export const facebook = async (req: Request, res: Response) => {

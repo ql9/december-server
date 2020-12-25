@@ -38,7 +38,9 @@ mongoose
         console.log('Could not connect to the database. Exiting now...', err);
         process.exit();
     });
-
+app.post('/fb', (req: Request, res: Response) => {
+    res.status(200).send('OK');
+});
 app.post('/register', authController.register);
 app.post('/activation', authController.activate);
 app.post('/login', authController.login);
