@@ -51,14 +51,10 @@ app.use('/images', express.static('images'));
 
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {
-    let token = req.headers.authorization;
-    if (!token) {
-        token = req.headers.cookie?.split('=')[1];
-    }
+    const token = req.headers.authorization;
+
     if (token) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        jwt.verify(token, process.env.JWT_SECRET_KEY, function (err: any, decoded: any) {
+        jwt.verify(token, `${process.env.JWT_SECRET_KEY}`, function (err: any, decoded: any) {
             if (err) {
                 return res.status(403).json({
                     success: false,
@@ -90,8 +86,8 @@ app.get('/post/:postId', postController.read);
 app.post('/post', postController.create);
 app.put('/post', postController.update);
 app.delete('/post/:postId', postController.deletePost);
-app.put('/post/like/:postId/:userId', postController.like);
-app.put('/post/unlike/:postId/:userId', postController.unLike);
+app.put('/post/like', postController.like);
+app.put('/post/unlike', postController.unLike);
 
 // comment
 app.post('/comment', commentController.create);
