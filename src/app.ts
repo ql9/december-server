@@ -106,6 +106,6 @@ app.put('/unfollow/:userId/:followerId', followController.unFollow);
 app.get('/:userId', dashboardController.getPosts);
 app.get('/', dashboardController.get);
 app.get('/comment/:postId', dashboardController.getCommentByPost);
-app.get('/post/user/:userId', dashboardController.getPostsByUserId);
+app.get('/post/u/:userId', dashboardController.getPostsByUserId);
 
 export default app;

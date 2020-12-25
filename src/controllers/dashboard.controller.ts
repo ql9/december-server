@@ -2,6 +2,7 @@ import { User } from '../models/user.model';
 import { Comment } from '../models/comment.model';
 import { Post } from '../models/post.model';
 import { Request, Response } from 'express';
+import moment from 'moment';
 
 function compare(a: any, b: any) {
     if (a.updatedAt < b.updatedAt) {
@@ -207,10 +208,11 @@ export const getCommentByPost = async (req: Request, res: Response) => {
                 });
             }
             const results: {
+                key: string;
                 userId: string;
-                name: string;
                 avatar: string;
-                postId: string;
+                header: string;
+                headerMedia: string;
                 content: string;
             }[] = [];
             comments.forEach(async comment => {
@@ -218,20 +220,22 @@ export const getCommentByPost = async (req: Request, res: Response) => {
                 // @ts-ignore
                 await User.findById(comment.userId).then(user => {
                     results.push({
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        userId: comment.userId,
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        name: user.name,
+                        userId: user?._id,
+                        key: comment._id,
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         avatar: user.avatar,
-                        postId: postId,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        header: user.name,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        headerMedia: moment(comment.updatedAt).format('ll'),
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         content: comment.content,
                     });
+
                     if (results.length === comments.length) {
                         return res.status(200).json({
                             success: true,
