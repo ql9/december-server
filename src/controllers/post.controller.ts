@@ -61,7 +61,7 @@ export const read = async (req: Request, res: Response) => {
                 content: post.content,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                image: post.content,
+                image: post.image,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 likeBy: post.likeBy,
