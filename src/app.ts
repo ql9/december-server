@@ -12,7 +12,6 @@ import * as postController from './controllers/post.controller';
 import * as commentController from './controllers/comment.controller';
 import * as followController from './controllers/follow.controller';
 import * as dashboardController from './controllers/dashboard.controller';
-import { uploadImage } from './controllers/upload.controller';
 
 dotenv.config();
 const app = express();
@@ -47,8 +46,6 @@ app.post('/login', authController.login);
 app.post('/auth/google', authController.google);
 app.post('/auth/facebook', authController.facebook);
 
-app.use('/images', express.static('images'));
-
 // Check token, ignored when create account or login
 app.use((req: Request, res: Response, next) => {
     const token = req.headers.authorization;
@@ -71,9 +68,6 @@ app.use((req: Request, res: Response, next) => {
         });
     }
 });
-
-// images
-app.post('/upload', uploadImage);
 
 // user
 app.get('/users', userController.getAll);

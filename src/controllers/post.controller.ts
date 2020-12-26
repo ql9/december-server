@@ -1,45 +1,35 @@
-import { Post } from '../models/post.model';
 import { Request, Response } from 'express';
 
-import { upload } from './upload.controller';
-import multer from 'multer';
+import { Post } from '../models/post.model';
 import { User } from '../models/user.model';
+import { Comment } from '../models/comment.model';
 
 export const create = async (req: Request, res: Response) => {
-    upload(req, res, async (err: any) => {
-        if (err instanceof multer.MulterError) {
-            return res.status(500).json(err);
-        } else if (err) {
-            return res.status(500).json(err);
-        }
-        const { content, userId } = req.body;
-        const image = `${process.env.APP_URL}/` + req.file.path;
-        console.log(image);
-        const likeBy: string[] = [];
-        const post = new Post({
-            userId,
-            image,
-            content,
-            likeBy,
-        });
-
-        await post
-            .save()
-            .then(post => {
-                res.status(201).json({
-                    success: true,
-                    message: 'create post success',
-                    post,
-                });
-            })
-            .catch(err => {
-                res.status(401).json({
-                    success: false,
-                    message: 'error when create post',
-                    err,
-                });
-            });
+    const { image, content, userId } = req.body;
+    const likeBy: string[] = [];
+    const post = new Post({
+        userId,
+        image,
+        content,
+        likeBy,
     });
+
+    await post
+        .save()
+        .then(post => {
+            res.status(201).json({
+                success: true,
+                message: 'Posted Successfully',
+                post,
+            });
+        })
+        .catch(err => {
+            res.status(401).json({
+                success: false,
+                message: 'Error when create post',
+                err,
+            });
+        });
 };
 
 export const read = async (req: Request, res: Response) => {
@@ -68,7 +58,7 @@ export const read = async (req: Request, res: Response) => {
             };
             return res.status(200).json({
                 success: true,
-                message: 'get post ne',
+                message: 'get post',
                 data,
             });
         })
@@ -82,63 +72,56 @@ export const read = async (req: Request, res: Response) => {
 };
 
 export const update = async (req: Request, res: Response) => {
-    upload(req, res, async (err: any) => {
-        if (err instanceof multer.MulterError) {
-            return res.status(500).json(err);
-        } else if (err) {
-            return res.status(500).json(err);
-        }
-        const { postId, content } = req.body;
-        const image = `${process.env.APP_URL}/` + req.file.path;
+    const { image, postId, content } = req.body;
 
-        await Post.findById(postId)
-            .then(async post => {
-                if (image) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    post.image = image;
-                }
-                if (content) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    post.content = content;
-                }
-                await post
-                    ?.save()
-                    .then(() => {
-                        res.status(200).json({
-                            success: true,
-                            message: 'updated post',
-                            post,
-                        });
-                    })
-                    .catch(err => {
-                        res.status(500).json({
-                            success: false,
-                            message: 'error when edit post',
-                            err,
-                        });
+    await Post.findById(postId)
+        .then(async post => {
+            if (image) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                post.image = image;
+            }
+            if (content) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                post.content = content;
+            }
+            await post
+                ?.save()
+                .then(() => {
+                    res.status(200).json({
+                        success: true,
+                        message: 'Updated Post Successfully',
+                        post,
                     });
-            })
-            .catch(err =>
-                res.status(404).json({
-                    success: false,
-                    message: 'cannot find comment',
-                    data: err,
-                }),
-            );
-    });
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        success: false,
+                        message: 'error when edit post',
+                        err,
+                    });
+                });
+        })
+        .catch(err =>
+            res.status(404).json({
+                success: false,
+                message: 'cannot find comment',
+                data: err,
+            }),
+        );
 };
 
 export const deletePost = async (req: Request, res: Response) => {
     const { postId } = req.params;
     await Post.deleteOne({ _id: postId })
-        .then(() =>
+        .then(async () => {
+            await Comment.deleteMany({ postId: postId });
             res.status(204).json({
                 success: true,
                 message: 'deleted post',
-            }),
-        )
+            });
+        })
         .catch((err: any) =>
             res.status(500).json({
                 success: false,

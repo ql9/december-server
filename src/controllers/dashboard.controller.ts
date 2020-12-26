@@ -17,7 +17,8 @@ function compare(a: any, b: any) {
 export const get = async (req: Request, res: Response) => {
     await Post.find()
         .then(posts => {
-            if (posts.length === 0) {
+            let length = posts.length;
+            if (length === 0) {
                 return res.status(404).json({
                     success: false,
                     message: 'no post yet',
@@ -36,23 +37,26 @@ export const get = async (req: Request, res: Response) => {
             posts.forEach(async post => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                const { _id, name, avatar } = await User.findById(post.userId);
-                data.push({
-                    userId: _id,
-                    name: name,
-                    avatar: avatar,
-                    postId: post._id,
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    content: post.content,
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    image: post.image,
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    likeBy: post.likeBy,
-                });
-                if (data.length === posts.length) {
+                const { _id, name, avatar, isDeleted } = await User.findById(post.userId);
+                if (isDeleted) length--;
+                else {
+                    data.push({
+                        userId: _id,
+                        name: name,
+                        avatar: avatar,
+                        postId: post._id,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        content: post.content,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        image: post.image,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        likeBy: post.likeBy,
+                    });
+                }
+                if (data.length === length) {
                     return res.status(200).json({
                         success: true,
                         message: 'get list post',
