@@ -24,10 +24,6 @@ const UserSchema: Schema = new Schema(
             required: true,
             select: false,
         },
-        follower: {
-            type: Array,
-            required: false,
-        },
         isDeleted: {
             type: Boolean,
             default: false,

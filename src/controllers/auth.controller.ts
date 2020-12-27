@@ -225,7 +225,7 @@ export const google = async (req: Request, res: Response) => {
         await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_APP_ID }).then(response => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const { email_verified, name, email } = response.payload;
+            const { email_verified, name, email, picture } = response.payload;
             if (email_verified) {
                 User.findOne({ email }).then(async user => {
                     if (user) {
@@ -264,6 +264,7 @@ export const google = async (req: Request, res: Response) => {
                             email: email,
                             password: await hash(password, generateSalt(11)),
                             follower: follower,
+                            avatar: picture,
                         });
                         await user
                             .save()

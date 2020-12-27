@@ -51,30 +51,11 @@ export const edit = async (req: Request, res: Response) => {
 };
 
 export const deleteComment = async (req: Request, res: Response) => {
-    const { commentId, userId } = req.params;
-    await Comment.findById(commentId)
-        .then(async comment => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            if (userId === comment.userId) {
-                await Comment.deleteOne({ _id: commentId }).then(() =>
-                    res.status(204).json({
-                        success: true,
-                        message: 'deleted comment',
-                    }),
-                );
-            } else
-                () =>
-                    res.status(401).json({
-                        success: false,
-                        message: 'action is not allowed',
-                    });
-        })
-        .catch(err =>
-            res.status(404).json({
-                success: false,
-                message: 'cannot find comment',
-                err,
-            }),
-        );
+    const { commentId } = req.params;
+    await Comment.deleteOne({ _id: commentId }).then(() =>
+        res.status(204).json({
+            success: true,
+            message: 'deleted comment',
+        }),
+    );
 };

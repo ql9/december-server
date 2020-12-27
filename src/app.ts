@@ -10,7 +10,6 @@ import * as userController from './controllers/user.controller';
 import * as authController from './controllers/auth.controller';
 import * as postController from './controllers/post.controller';
 import * as commentController from './controllers/comment.controller';
-import * as followController from './controllers/follow.controller';
 import * as dashboardController from './controllers/dashboard.controller';
 
 dotenv.config();
@@ -86,14 +85,9 @@ app.put('/post/unlike', postController.unLike);
 // comment
 app.post('/comment', commentController.create);
 app.put('/comment', commentController.edit);
-app.delete('/comment/delete/:commentId/:userId', commentController.deleteComment);
-
-// follow
-app.put('/follow/:userId/:followerId', followController.follow);
-app.put('/unfollow/:userId/:followerId', followController.unFollow);
+app.delete('/comment/:commentId', commentController.deleteComment);
 
 // get posts and comments
-app.get('/:userId', dashboardController.getPosts);
 app.get('/', dashboardController.get);
 app.get('/comment/:postId', dashboardController.getCommentByPost);
 app.get('/post/u/:userId', dashboardController.getPostsByUserId);
