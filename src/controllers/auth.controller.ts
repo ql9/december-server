@@ -89,12 +89,10 @@ export const activate = async (req: Request, res: Response) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const { name, email, password } = jwt.decode(token);
-                const follower: string[] = [];
                 const user = new User({
                     name: name,
                     email: email,
                     password: await hash(password, generateSalt(11)),
-                    follower: follower,
                 });
                 await user
                     .save()
@@ -147,7 +145,7 @@ export const login = async (req: Request, res: Response) => {
                     );
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    const { _id, name, email, follower } = user;
+                    const { _id, name, email } = user;
                     return res.status(200).json({
                         success: true,
                         message: 'Correct Details',
@@ -156,7 +154,6 @@ export const login = async (req: Request, res: Response) => {
                             _id,
                             name,
                             email,
-                            follower,
                         },
                     });
                 } else {
@@ -244,7 +241,7 @@ export const google = async (req: Request, res: Response) => {
                         );
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        const { _id, follower } = user;
+                        const { _id } = user;
                         return res.status(200).json({
                             success: true,
                             message: 'Correct Details',
@@ -253,17 +250,14 @@ export const google = async (req: Request, res: Response) => {
                                 _id,
                                 name,
                                 email,
-                                follower,
                             },
                         });
                     } else {
                         const password = email + `${process.env.JWT_SECRET_KEY}`;
-                        const follower: string[] = [];
                         const user = new User({
                             name: name,
                             email: email,
                             password: await hash(password, generateSalt(11)),
-                            follower: follower,
                             avatar: picture,
                         });
                         await user
@@ -271,7 +265,7 @@ export const google = async (req: Request, res: Response) => {
                             .then(user => {
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                 // @ts-ignore
-                                const { _id, name, email, follower } = user;
+                                const { _id, name, email } = user;
                                 const token = jwt.sign(
                                     {
                                         name: name,
@@ -290,7 +284,6 @@ export const google = async (req: Request, res: Response) => {
                                         _id,
                                         name,
                                         email,
-                                        follower,
                                     },
                                 });
                             })
@@ -341,38 +334,34 @@ export const facebook = async (req: Request, res: Response) => {
             });
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const { _id, name, follower } = user;
+            const { _id, name } = user;
             return res.json({
                 token,
                 user: {
                     _id,
                     name,
                     email,
-                    follower,
                 },
             });
         } else {
             const password = email + `${process.env.JWT_SECRET_KEY}`;
-            const follower: string[] = [];
             user = new User({
                 name: name,
                 email: email,
                 password: await hash(password, generateSalt(11)),
-                follower: follower,
             });
 
             user.save().then(data => {
                 const token = jwt.sign({ _id: data._id }, `${process.env.JWT_SECRET_KEY}`, { expiresIn: '7d' });
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                const { _id, name, follower } = data;
+                const { _id, name } = data;
                 return res.json({
                     token,
                     user: {
                         _id,
                         name,
                         email,
-                        follower,
                     },
                 });
             });
