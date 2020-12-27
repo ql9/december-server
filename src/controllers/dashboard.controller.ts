@@ -6,7 +6,6 @@ import moment from 'moment';
 
 export const get = async (req: Request, res: Response) => {
     await Post.find()
-        .sort({ createdAt: -1 })
         .then(posts => {
             let length = posts.length;
             if (length === 0) {
@@ -15,7 +14,7 @@ export const get = async (req: Request, res: Response) => {
                     message: 'no post yet',
                 });
             }
-            const data: {
+            let data: {
                 userId: string;
                 name: string;
                 avatar: string;
@@ -23,6 +22,8 @@ export const get = async (req: Request, res: Response) => {
                 content: string;
                 image: string;
                 likeBy: Array<string>;
+                headerMedia: string;
+                createdAt: number;
             }[] = [];
             posts.forEach(async post => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -44,9 +45,16 @@ export const get = async (req: Request, res: Response) => {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         likeBy: post.likeBy,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        createdAt: post.createdAt,
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        headerMedia: moment(post.createdAt).fromNow(),
                     });
                 }
                 if (data.length === length) {
+                    data = data.sort((y, x) => x.createdAt - y.createdAt);
                     return res.status(200).json({
                         success: true,
                         message: 'get list post',
@@ -74,7 +82,7 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
                     message: 'no post yet',
                 });
             }
-            const data: {
+            let data: {
                 userId: string;
                 name: string;
                 avatar: string;
@@ -82,6 +90,8 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
                 content: string;
                 image: string;
                 likeBy: Array<string>;
+                headerMedia: string;
+                createdAt: number;
             }[] = [];
             posts.forEach(async post => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -101,8 +111,15 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     likeBy: post.likeBy,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    createdAt: post.createdAt,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    headerMedia: moment(post.createdAt).fromNow(),
                 });
                 if (data.length === posts.length) {
+                    data = data.sort((y, x) => x.createdAt - y.createdAt);
                     return res.status(200).json({
                         success: true,
                         message: 'get list post',
@@ -165,8 +182,6 @@ export const getCommentByPost = async (req: Request, res: Response) => {
                     });
 
                     if (results.length === comments.length) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
                         results = results.sort((x, y) => x.createdAt - y.createdAt);
                         return res.status(200).json({
                             success: true,
