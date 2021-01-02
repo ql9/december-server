@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-// import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import * as bodyParser from 'body-parser';
@@ -36,9 +35,7 @@ mongoose
         console.log('Could not connect to the database. Exiting now...', err);
         process.exit();
     });
-app.post('/fb', (req: Request, res: Response) => {
-    res.status(200).send('OK');
-});
+
 app.post('/register', authController.register);
 app.post('/activation', authController.activate);
 app.post('/login', authController.login);
@@ -50,9 +47,9 @@ app.use((req: Request, res: Response, next) => {
     const token = req.headers.authorization;
 
     if (token) {
-        jwt.verify(token, `${process.env.JWT_SECRET_KEY}`, function (err: any, decoded: any) {
+        jwt.verify(token, `${process.env.JWT_SECRET_KEY}`, (err: any, decoded: any) => {
             if (err) {
-                return res.status(403).json({
+                return res.status(401).json({
                     success: false,
                     message: 'Failed to authenticate token',
                 });
@@ -61,7 +58,7 @@ app.use((req: Request, res: Response, next) => {
             next();
         });
     } else {
-        res.status(403).json({
+        res.status(401).json({
             success: false,
             message: 'No token provided',
         });

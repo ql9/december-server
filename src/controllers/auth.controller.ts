@@ -140,7 +140,7 @@ export const login = async (req: Request, res: Response) => {
                         },
                         `${process.env.JWT_SECRET_KEY}`,
                         {
-                            expiresIn: '24h',
+                            expiresIn: '3m',
                         },
                     );
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -236,7 +236,7 @@ export const google = async (req: Request, res: Response) => {
                             },
                             `${process.env.JWT_SECRET_KEY}`,
                             {
-                                expiresIn: '24h',
+                                expiresIn: '3m',
                             },
                         );
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -273,7 +273,7 @@ export const google = async (req: Request, res: Response) => {
                                     },
                                     `${process.env.JWT_SECRET_KEY}`,
                                     {
-                                        expiresIn: '24h',
+                                        expiresIn: '3m',
                                     },
                                 );
                                 return res.status(200).json({
@@ -313,49 +313,29 @@ export const google = async (req: Request, res: Response) => {
 export const facebook = async (req: Request, res: Response) => {
     const { accessToken } = req.body;
 
-    const { data } = await axios({
-        url: 'https://graph.facebook.com/me',
-        method: 'get',
-        params: {
-            fields: ['id', 'email', 'name'].join(','),
-            access_token: accessToken,
-        },
-    });
-    let { email } = data;
-    const { id, name } = data; // { id, email, name }
-    if (!email) {
-        email = id + '@facebook.com';
-    }
+    if (accessToken) {
+        const { data } = await axios({
+            url: 'https://graph.facebook.com/me',
+            method: 'get',
+            params: {
+                fields: ['id', 'email', 'name'].join(','),
+                access_token: accessToken,
+            },
+        });
+        let { email } = data;
+        const { id, name } = data; // { id, email, name }
+        if (!email) {
+            email = id + '@facebook.com';
+        }
 
-    User.findOne({ email }).then(async user => {
-        if (user) {
-            const token = jwt.sign({ _id: user._id }, `${process.env.JWT_SECRET_KEY}`, {
-                expiresIn: '7d',
-            });
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const { _id, name } = user;
-            return res.json({
-                token,
-                user: {
-                    _id,
-                    name,
-                    email,
-                },
-            });
-        } else {
-            const password = email + `${process.env.JWT_SECRET_KEY}`;
-            user = new User({
-                name: name,
-                email: email,
-                password: await hash(password, generateSalt(11)),
-            });
-
-            user.save().then(data => {
-                const token = jwt.sign({ _id: data._id }, `${process.env.JWT_SECRET_KEY}`, { expiresIn: '7d' });
+        User.findOne({ email }).then(async user => {
+            if (user) {
+                const token = jwt.sign({ _id: user._id }, `${process.env.JWT_SECRET_KEY}`, {
+                    expiresIn: '3m',
+                });
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                const { _id, name } = data;
+                const { _id, name } = user;
                 return res.json({
                     token,
                     user: {
@@ -364,7 +344,34 @@ export const facebook = async (req: Request, res: Response) => {
                         email,
                     },
                 });
-            });
-        }
-    });
+            } else {
+                const password = email + `${process.env.JWT_SECRET_KEY}`;
+                user = new User({
+                    name: name,
+                    email: email,
+                    password: await hash(password, generateSalt(11)),
+                });
+
+                user.save().then(data => {
+                    const token = jwt.sign({ _id: data._id }, `${process.env.JWT_SECRET_KEY}`, { expiresIn: '3m' });
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const { _id, name } = data;
+                    return res.json({
+                        token,
+                        user: {
+                            _id,
+                            name,
+                            email,
+                        },
+                    });
+                });
+            }
+        });
+    } else {
+        return res.status(401).json({
+            success: false,
+            message: 'no token provide',
+        });
+    }
 };
